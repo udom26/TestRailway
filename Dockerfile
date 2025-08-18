@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y \
     vim \
     libpq-dev \
     default-mysql-client \
-    && docker-php-ext-install pdo pdo_mysql \
+    && docker-php-ext-install pdo pdo_mysql mbstring opcache \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # ติดตั้ง Composer (copy มาจาก official composer image)
@@ -29,7 +29,8 @@ RUN chown -R www-data:www-data /var/www/html
 # ถ้ามี composer.json ให้รัน composer install (ถ้าต้องการ)
 # RUN composer install --no-dev --optimize-autoloader
 
-# เปิดพอร์ตถ้าจำเป็น (ส่วนใหญ่ php-fpm ไม่ต้องเปิดเพราะจะใช้กับ nginx)
-# EXPOSE 9000
+# เปิดพอร์ต ถ้าจำเป็น (PHP-FPM default ใช้ port 9000)
+EXPOSE 9000
 
 # คำสั่งเริ่มต้น container (php-fpm จะรันอยู่แล้วตาม image php-fpm)
+CMD ["php-fpm"]
