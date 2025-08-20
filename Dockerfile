@@ -8,19 +8,24 @@ RUN apt-get update && apt-get install -y \
 # ติดตั้ง Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# ก๊อปโค้ดเข้า container
+# Set working directory
 WORKDIR /var/www/html
+
+# Copy project files
 COPY . .
 
-# Permission
+# ตั้ง permission
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html
 
-# Copy nginx config
+# Copy Nginx config
 COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
 
-# Copy supervisor config
+# Copy Supervisor config
 COPY ./supervisord.conf /etc/supervisord.conf
+
+# ตรวจสอบว่า nginx config ถูกต้อง
+RUN nginx -t
 
 EXPOSE 80
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
