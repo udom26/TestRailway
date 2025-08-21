@@ -1,29 +1,28 @@
 FROM php:8.2-fpm
 
-# ติดตั้ง system dependencies
+# Install dependencies
 RUN apt-get update && apt-get install -y \
-    libpng-dev libonig-dev libxml2-dev zip unzip git curl supervisor nginx \
+    libpng-dev libonig-dev libxml2-dev zip unzip git curl nginx supervisor \
     && docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd
 
-# ติดตั้ง Composer
+# Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
-# Set working directory
 WORKDIR /var/www/html
 
-# Copy project
+# Copy project files
 COPY . .
 
-# ตั้ง permission
+# Set permissions
 RUN chown -R www-data:www-data /var/www/html \
-    && chmod -R 755 /var/www/html \
-    && chmod -R 777 storage bootstrap/cache
+    && chmod -R 755 /var/www/html
 
-# ลบ default nginx config เดิม
-RUN rm -f /etc/nginx/conf.d/default.conf
+# Copy Nginx and Supervisor config
+COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY ./supervisord.conf /etc/supervisord.conf
 
-# Copy supervisor config
-COPY supervisord.conf /etc/supervisord.conf
-
+# Expose port
 EXPOSE 80
+
+# Start Supervisord
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
